@@ -7,13 +7,13 @@ package ink.siilm.shared.config
 data class ServerConfig(
     val host: String = LandropProperties.getServerHost(),
     val port: Int = LandropProperties.getServerPort(),
-    val fileBaseDir: String = "./landrop-files",
+    val fileBaseDir: String = LandropProperties.getFileBaseDir(),
     val maxFileSizeMB: Long = 500,
     val maxConcurrentUploads: Int = 10,
     val heartbeatIntervalMs: Long = 20_000,
     val heartbeatTimeoutMs: Long = 30_000,
     val maxLostPingCount: Int = 3,
     val readTimeoutMs: Long = 90_000,
-    val fileExpirationHours: Int = 24,
+    val fileExpirationHours: Int = LandropProperties.getFileExpirationHours(),
     val maxMessageQueueSize: Int = 256,
 )

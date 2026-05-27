@@ -1,6 +1,7 @@
 package ink.siilm.core.file
 
 import ink.siilm.core.persistence.FileTable
+import ink.siilm.shared.config.LandropProperties
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
@@ -12,9 +13,9 @@ import java.time.LocalDate
 import java.util.*
 
 class StoragePathAllocator(
-    private val baseDir: Path = Path.of("./landrop-files"),
-    private val storageMode: String = "local",
-    private val cloudCacheDir: Path = Path.of("./cloud-cache")
+    private val baseDir: Path = Path.of(LandropProperties.getFileBaseDir()),
+    private val storageMode: String = LandropProperties.getStorageMode(),
+    private val cloudCacheDir: Path = Path.of(LandropProperties.getStorageCloudCacheDir())
 ) {
     fun allocatePath(fileId: String, originalFileName: String): Path {
         val dateDir = LocalDate.now().toString()
