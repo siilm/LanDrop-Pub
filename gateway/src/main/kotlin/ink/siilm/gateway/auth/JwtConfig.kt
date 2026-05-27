@@ -1,18 +1,20 @@
 package ink.siilm.gateway.auth
 
+import ink.siilm.shared.config.LandropProperties
+
 /**
- * JWT 配置。
+ * JWT 配置（gateway 验证端）。
  *
- * v3 认证体系中，gateway 持有 JWT 签名密钥，可独立验证 access token 而无需调 core。
+ * 统一从 landrop.properties 读取，与 core 签发端共享同一密钥。
  * core 负责签发 JWT（登录时），gateway 负责验证 JWT（每次请求）。
  */
 data class JwtConfig(
-    /** HMAC-SHA256 签名密钥（至少 256 位）。默认从 ServerConfig 或环境变量获取。 */
-    val secret: String = System.getenv("LANDROP_JWT_SECRET") ?: "landrop-dev-secret-change-in-production-32bytes!!",
+    /** HMAC-SHA256 签名密钥（至少 256 位） */
+    val secret: String = LandropProperties.getJwtProperties().secret,
     /** JWT 签发者标识 */
-    val issuer: String = "landrop",
+    val issuer: String = LandropProperties.getJwtProperties().issuer,
     /** access token 有效期（秒），默认 15 分钟 */
-    val accessTokenTtlSeconds: Long = 900,
+    val accessTokenTtlSeconds: Long = LandropProperties.getJwtProperties().accessTokenTtlSeconds,
     /** refresh token 有效期（秒），默认 14 天 */
-    val refreshTokenTtlSeconds: Long = 1_209_600
+    val refreshTokenTtlSeconds: Long = LandropProperties.getJwtProperties().refreshTokenTtlSeconds
 )

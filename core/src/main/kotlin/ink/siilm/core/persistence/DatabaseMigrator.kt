@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory
 object DatabaseMigrator {
     fun migrate() {
         log.info("Running database migration...")
+        log.info("It will take a long time...")
         transaction {
             SchemaUtils.createMissingTablesAndColumns(
                 UserTable, UserSessionTable, TrustDeviceTable, GlobalRoleTable,
