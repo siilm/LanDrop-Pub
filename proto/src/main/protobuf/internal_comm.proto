@@ -1,0 +1,158 @@
+syntax = "proto3";
+
+package landrop.internal;
+
+option java_package = "ink.siilm.proto";
+option java_multiple_files = false;
+
+// ============================================================
+// 顶层信封：所有内部消息均包裹在 Envelope 中
+// ============================================================
+message Envelope {
+  string message_id = 1;
+  int64 timestamp = 2;
+  string session_id = 3;  // WebSocket 会话标识，用于多设备区分和消息路由
+
+  oneof payload {
+    SessionEvent    session_event    = 10;
+    MessageDelivery message_delivery = 20;
+    FileInstruction file_instruction = 30;
+    RoomCommand     room_command     = 40;
+    Ack             ack              = 50;
+    ErrorInfo       error            = 51;
+  }
+}
+
+// ============================================================
+// 1. 会话事件
+// ============================================================
+message SessionEvent {
+  enum Type {
+    CONNECTED    = 0;
+    DISCONNECTED = 1;
+    KICKED       = 2;
+    PING         = 3;
+    PONG         = 4;
+  }
+  Type type      = 1;
+  string user_id = 2;
+  string reason  = 3;
+}
+
+// ============================================================
+// 2. 消息投递
+// ============================================================
+message MessageDelivery {
+  enum ContentType {
+    TEXT  = 0;
+    IMAGE = 1;
+    FILE  = 2;
+    SYSTEM_NOTICE = 3;
+  }
+
+  string from_user_id   = 1;
+  string from_username  = 2;
+  ContentType content_type = 3;
+
+  string text_content = 4;
+
+  FileReference file_ref = 5;
+
+  string elements = 8;      // JSON 数组字符串（替代 text_content，支持富文本）
+  string storage_path = 9;  // 聊天图片消息的存储路径
+  string file_ref_id = 11;  // 多媒体消息关联的 room_files.file_id
+
+  oneof target {
+    string room_id    = 6;
+    string to_user_id = 7;
+  }
+}
+
+message FileReference {
+  string file_id       = 1;
+  string file_name     = 2;
+  int64  file_size     = 3;
+  string mime_type     = 4;
+  string storage_path  = 5;
+  string checksum_sha256 = 6;
+}
+
+// ============================================================
+// 3. 文件指令
+// ============================================================
+message FileInstruction {
+  enum Command {
+    REQUEST_UPLOAD_SLOT   = 0;
+    UPLOAD_COMPLETED      = 1;
+    REQUEST_DOWNLOAD_INFO = 2;
+    UPLOAD_SLOT_GRANTED   = 3;
+    UPLOAD_REJECTED       = 4;
+    DOWNLOAD_INFO_READY   = 5;
+    FORWARD_REQUEST       = 6;
+    DELETE_STALE_FILE     = 7;
+  }
+  Command command       = 1;
+  string file_id        = 2;
+  string user_id        = 3;
+  string storage_path   = 4;
+  int64  max_size       = 5;
+  string error_reason   = 6;
+  string file_name      = 7;  // 原始文件名（REQUEST_UPLOAD_SLOT 时传入）
+  string target_user_id = 8;  // 文件接收方（FORWARD_REQUEST / DOWNLOAD 时使用）
+  string checksum        = 9;  // SHA-256 校验值（UPLOAD_COMPLETED 时传入）
+  string room_id         = 10; // 归属房间 ID（REQUEST_UPLOAD_SLOT 时传入）
+}
+
+// ============================================================
+// 4. 房间命令
+// ============================================================
+message RoomCommand {
+  enum Action {
+    CREATE  = 0;
+    JOIN    = 1;
+    LEAVE   = 2;
+    DESTROY = 3;
+    LIST    = 4;
+  }
+  Action action      = 1;
+  string room_id     = 2;
+  string room_name   = 3;
+  string user_id     = 4;
+  string password    = 5;
+
+  repeated RoomInfo rooms = 6;
+}
+
+message RoomInfo {
+  string room_id   = 1;
+  string room_name = 2;
+  int32  member_count = 3;
+  bool   has_password = 4;
+}
+
+// ============================================================
+// 5. 确认与错误
+// ============================================================
+message Ack {
+  string ref_message_id = 1;
+  enum Status {
+    OK    = 0;
+    ERROR = 1;
+  }
+  Status status = 2;
+}
+
+message ErrorInfo {
+  enum ErrorType {
+    INVALID_MESSAGE   = 0;
+    ROOM_NOT_FOUND    = 1;
+    USER_OFFLINE      = 2;
+    PERMISSION_DENIED = 3;
+    FILE_TOO_LARGE    = 4;
+    INTERNAL_ERROR    = 5;
+  }
+  string ref_message_id = 1;
+  int32  error_code     = 2;
+  string error_message  = 3;
+  ErrorType error_type  = 4;  // 结构化错误类型
+}

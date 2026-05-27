@@ -1,0 +1,127 @@
+# ============================================================
+# LanDrop 服务器配置文件
+# ============================================================
+# 将此landrop.properties文件放置于jar的工作目录下;
+# 未配置的项将使用代码中的默认值。
+# 配置修改后需要重启生效。
+# ============================================================
+
+# ========================
+# 服务器监听配置
+# ========================
+server.host=0.0.0.0
+server.port=8080
+
+# ========================
+# 数据库配置（MySQL）
+# ========================
+# 数据库 JDBC URL
+# 格式：jdbc:mysql://<host>:<port>/<database>?参数
+# db.url
+# 数据库用户名
+# db.user
+# 数据库密码
+# db.password
+# JDBC 驱动类名（MySQL 使用 com.mysql.cj.jdbc.Driver）
+# db.driver
+# 连接池最大连接数
+# db.pool.max_size
+# 连接池最小空闲连接数
+# db.pool.min_idle
+# 获取连接的超时时间（毫秒）
+# db.pool.connection_timeout_ms
+
+db.url=jdbc:mysql://localhost:3306/landrop?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+db.user=your_db_user
+db.password=your_db_password
+db.driver=com.mysql.cj.jdbc.Driver
+db.pool.max_size=10
+db.pool.min_idle=2
+db.pool.connection_timeout_ms=30000
+
+# ========================
+# 轻量数据库（H2 / SQLite）示例（取消注释并注释 MySQL 块）
+# ========================
+# 内存 H2 数据库（数据不持久化，适合测试）
+# db.url=jdbc:h2:mem:landrop;DB_CLOSE_DELAY=-1
+# db.user=sa
+# db.password=
+# db.driver=org.h2.Driver
+
+# 文件 SQLite 数据库（持久化到本地文件）
+# db.url=jdbc:sqlite:./landrop-data/landrop.db
+# db.user=
+# db.password=
+# db.driver=org.sqlite.JDBC
+
+# ========================
+# Redis 配置（预留，用于会话共享或分布式缓存）
+# ========================
+# Redis 服务器地址
+redis.host=localhost
+# Redis 服务器端口
+redis.port=6379
+# Redis 认证密码（若无密码请留空）
+redis.password=
+
+# ========================
+# JWT 认证配置
+# ========================
+# JWT 签名密钥（必须至少 32 字节，请务必修改为强随机字符串）
+jwt.secret=your-strong-secret-key-at-least-32-bytes-long
+# JWT 颁发者
+jwt.issuer=landrop
+# Access Token 有效期（秒），默认 15 分钟
+jwt.access_token_ttl_seconds=900
+# Refresh Token 有效期（秒），默认 14 天
+jwt.refresh_token_ttl_seconds=1209600
+
+# ========================
+# 文件存储配置
+# ========================
+# 文件存储根目录（相对或绝对路径）
+landrop.file.base_dir=./landrop-files
+# 临时文件的过期时间（小时），超时后清理
+landrop.file.expiration_hours=168
+
+# ========================
+# 安全挑战（用于某些验证操作，如修改密码）
+# ========================
+# 挑战码有效期（秒）
+landrop.challenge.ttl_seconds=60
+
+# ========================
+# 房间规则
+# ========================
+# 单个房间最大成员数
+landrop.room.max_members=500
+
+# ========================
+# 全局规则初始值（首次启动时写入 server_config 表）
+# ========================
+# 每个成员最多可创建的房间数
+landrop.config.max_rooms_per_member=2
+# 是否允许普通成员创建房间
+landrop.config.allow_member_create_rooms=true
+
+# ========================
+# 存储模式（目前仅支持 local，cloud 预留）
+# ========================
+# local：文件存储在本地磁盘
+# cloud：文件存储在云存储
+landrop.storage.mode=local
+# 云存储缓存地址
+# landrop.storage.cloud_cache_dir=http://example.com
+
+# ========================
+# 用户密钥存储
+# ========================
+# 新注册用户自动生成的 Ed25519 私钥/公钥存储目录
+landrop.secrets_dir=./landrop-files/secrets
+
+# ========================
+# 文件存储目录结构说明（仅提示，不可配置）
+# ========================
+# 头像：landrop-files/{user_id}/avatar/
+# 聊天图片：landrop-files/{room_id}/chatimg/
+# 房间文件：landrop-files/{room_id}/files/

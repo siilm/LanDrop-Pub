@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 控制台输出 Appender -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{ISO8601} [%thread] %highlight(%-5level) %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 异步 Appender — 避免 I/O 阻塞 Netty 事件循环 -->
+    <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <appender-ref ref="STDOUT"/>
+    </appender>
+
+    <!-- 项目包 -->
+    <logger name="ink.siilm" level="INFO"/>
+
+    <!-- 编解码详情（调试用） -->
+    <logger name="ink.siilm.gateway.codec" level="DEBUG"/>
+
+    <!-- 帧处理详情 -->
+    <logger name="ink.siilm.gateway" level="INFO"/>
+    <logger name="ink.siilm.gateway.Application" level="INFO"/>
+    <logger name="ink.siilm.gateway.ws" level="INFO"/>
+    <logger name="ink.siilm.gateway.http" level="INFO"/>
+    <logger name="ink.siilm.gateway.file" level="INFO"/>
+
+    <!-- core 引擎 -->
+    <logger name="ink.siilm.core" level="INFO"/>
+    <logger name="ink.siilm.core.room" level="INFO"/>
+
+    <!-- Ktor / Netty 框架日志抑制 -->
+    <logger name="io.ktor" level="WARN"/>
+    <logger name="io.netty" level="WARN"/>
+
+    <!-- Exposed SQL 日志 -->
+    <logger name="org.jetbrains.exposed" level="WARN"/>
+
+    <!-- Koin DI 日志 -->
+    <logger name="org.koin" level="INFO"/>
+
+    <!-- Protobuf 编译日志 -->
+    <logger name="com.google.protobuf" level="WARN"/>
+
+    <!-- 根日志级别 -->
+    <root level="INFO">
+        <appender-ref ref="ASYNC"/>
+    </root>
+</configuration>
