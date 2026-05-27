@@ -1,0 +1,108 @@
+# ============================================================
+# LanDrop Server Configuration File
+# ============================================================
+# Place this file in the working directory as config.properties,
+# Omitted entries will fall back to code defaults.
+# ============================================================
+
+# ========================
+# Database Configuration (MySQL for production)
+# ========================
+# JDBC URL
+# Format: jdbc:mysql://<host>:<port>/<database>?parameters
+# Replace host, port, database name, username, password accordingly
+db.url=jdbc:mysql://localhost:3306/landrop?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+# Database username
+db.user=your_db_user
+# Database password
+db.password=your_db_password
+# JDBC driver class (MySQL uses com.mysql.cj.jdbc.Driver)
+db.driver=com.mysql.cj.jdbc.Driver
+# Maximum connection pool size
+db.pool.max_size=10
+# Minimum idle connections in pool
+db.pool.min_idle=2
+# Connection timeout in milliseconds
+db.pool.connection_timeout_ms=30000
+
+# ========================
+# Lightweight Database Examples (H2 / SQLite) - uncomment and comment MySQL block
+# ========================
+# In-memory H2 (non-persistent, good for testing)
+# db.url=jdbc:h2:mem:landrop;DB_CLOSE_DELAY=-1
+# db.user=sa
+# db.password=
+# db.driver=org.h2.Driver
+# File-based SQLite (persistent)
+# db.url=jdbc:sqlite:./landrop-data/landrop.db
+# db.user=
+# db.password=
+# db.driver=org.sqlite.JDBC
+
+# ========================
+# Redis Configuration (reserved for session sharing / distributed cache)
+# ========================
+# Redis server host
+redis.host=localhost
+# Redis server port
+redis.port=6379
+# Redis password (leave empty if none)
+redis.password=
+
+# ========================
+# JWT Authentication
+# ========================
+# JWT signing secret (must be at least 32 bytes; change to a strong random string)
+jwt.secret=your-strong-secret-key-at-least-32-bytes-long
+# JWT issuer
+jwt.issuer=landrop
+# Access token TTL in seconds (default 15 minutes)
+jwt.access_token_ttl_seconds=900
+# Refresh token TTL in seconds (default 14 days)
+jwt.refresh_token_ttl_seconds=1209600
+
+# ========================
+# File Storage
+# ========================
+# Base directory for file storage (relative or absolute path)
+landrop.file.base_dir=./landrop-files
+# Expiration time for temporary files in hours
+landrop.file.expiration_hours=24
+
+# ========================
+# Security Challenge (used for certain verification operations like password change)
+# ========================
+# Challenge validity in seconds
+landrop.challenge.ttl_seconds=60
+
+# ========================
+# Room Rules
+# ========================
+# Maximum members per room
+landrop.room.max_members=500
+
+# ========================
+# Global Defaults (written to server_config table on first start)
+# ========================
+# Maximum rooms a member can create
+landrop.config.max_rooms_per_member=2
+# Whether ordinary members can create rooms
+landrop.config.allow_member_create_rooms=true
+
+# ========================
+# Storage Mode (only 'local' is currently supported; 'cloud' reserved)
+# ========================
+# local: files stored on local disk
+# cloud: cloud storage (not yet implemented)
+landrop.storage.mode=local
+# Cloud storage cache directory (used when mode=cloud, not yet effective)
+landrop.storage.cloud_cache_dir=./cloud-cache
+
+# ============================================================
+# Notes on file storage directory structure (informational only, not configurable):
+#   Avatars: landrop-files/{user_id}/avatar/
+#   Chat images: landrop-files/{room_id}/chatimg/
+#   Room files: landrop-files/{room_id}/files/
+# ============================================================
+# Restart the server after modifying this file.
+# ============================================================
