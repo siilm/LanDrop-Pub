@@ -16,4 +16,6 @@ data class ServerConfig(
     val readTimeoutMs: Long = 90_000,
     val fileExpirationHours: Int = LandropProperties.getFileExpirationHours(),
     val maxMessageQueueSize: Int = 256,
+    /** CORS 允许的 Origin 白名单（已转为小写）。空列表表示禁用 CORS。 */
+    val corsAllowedOrigins: List<String> = LandropProperties.getCorsAllowedOrigins(),
 )

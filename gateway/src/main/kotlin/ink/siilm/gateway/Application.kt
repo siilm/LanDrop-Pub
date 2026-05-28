@@ -20,6 +20,8 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.ktor.http.*
+import io.ktor.server.response.*
 import io.ktor.server.auth.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.routing.*
@@ -89,6 +91,49 @@ fun main() {
             maxFrameSize = Long.MAX_VALUE
             masking = false
         }
+
+        // CORS 处理（分两层）：
+        // 1. Monitoring 层（先于 Authentication）：白名单校验 + 基础 CORS 响应头
+        // 2. Routing 层：OPTIONS 预检 catch-all（在 authenticate 之前拦截，避免 405）
+        // Ktor 3.x 的 RouteScopedPlugin CORS 运行在路由阶段，晚于 Authentication，无法使用。
+        // 白名单由配置文件 cors.allowed_origins 控制（逗号分隔），空列表 = 禁用 CORS。
+        intercept(ApplicationCallPipeline.Monitoring) {
+            val corsLog = LoggerFactory.getLogger("CORS")
+            val allowedOrigins = config.corsAllowedOrigins
+
+            val origin = call.request.headers.getAll("Origin")?.singleOrNull() ?: return@intercept
+            val method = call.request.local.method
+            val path = call.request.local.uri
+            corsLog.info("{} {} origin={}", method.value, path, origin)
+
+            // /api/health 为公开端点，放通所有 Origin
+            if (path == "/api/health") {
+                call.response.headers.append("Access-Control-Allow-Origin", origin)
+                call.response.headers.append("Access-Control-Allow-Credentials", "true")
+                return@intercept
+            }
+
+            // 鉴权 API — 需要白名单
+            if (allowedOrigins.isEmpty()) {
+                return@intercept // 未配置白名单 = 禁用 CORS
+            }
+
+            if (origin.lowercase() !in allowedOrigins) {
+                corsLog.warn("CORS denied: origin {} not in allowed list", origin)
+                call.response.headers.append("Access-Control-Allow-Origin", allowedOrigins.first())
+                call.respondText(
+                    """{"error":"CORS origin not allowed"}""",
+                    ContentType.Application.Json,
+                    HttpStatusCode.Forbidden
+                )
+                return@intercept
+            }
+
+            // 合法 Origin — 添加基础 CORS 响应头
+            call.response.headers.append("Access-Control-Allow-Origin", origin)
+            call.response.headers.append("Access-Control-Allow-Credentials", "true")
+        }
+
         install(Authentication) {
             jwtAuth(jwtValidator)
         }
@@ -97,6 +142,34 @@ fun main() {
         }
 
         routing {
+            // CORS 预检 catch-all：在所有路由之前拦截 OPTIONS，避免路由引擎返回 405
+            // 基础 CORS 头（Allow-Origin, Allow-Credentials）已由 Monitoring 拦截器添加，
+            // 此处仅补充预检响应所需的 Method/Headers 声明并返回 200。
+            options("{...}") {
+                if (call.response.headers["Access-Control-Allow-Origin"] == null) {
+                    // Monitoring 拦截器未处理（白名单为空或非同源请求），放行让路由正常处理
+                    return@options
+                }
+                val origin = call.request.headers.getAll("Origin")?.singleOrNull()
+                if (origin == null) {
+                    return@options
+                }
+                call.response.headers.append(
+                    "Access-Control-Allow-Methods",
+                    "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+                )
+                val requestHeaders = call.request.headers.getAll("Access-Control-Request-Headers")
+                    ?.singleOrNull()
+                val allowed = if (requestHeaders.isNullOrBlank()) {
+                    "Content-Type, Authorization, X-Requested-With"
+                } else {
+                    "Content-Type, Authorization, $requestHeaders"
+                }
+                call.response.headers.append("Access-Control-Allow-Headers", allowed)
+                call.response.headers.append("Access-Control-Max-Age", "3600")
+                call.respond(HttpStatusCode.OK)
+            }
+
             with(httpRoutes) { configureRouting() }
             webSocket("/ws") {
                 val authResult = authenticate(this)

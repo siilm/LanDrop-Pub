@@ -66,4 +66,15 @@ object LandropProperties {
     fun getSecretsDir() = getString("landrop.secrets_dir", "./landrop-files/secrets")
     fun getServerHost() = getString("server.host", "0.0.0.0")
     fun getServerPort() = getInt("server.port", 8080)
+
+    /**
+     * CORS 允许的 Origin 白名单（逗号分隔）。
+     * 例：cors.allowed_origins=http://localhost:3000,http://192.168.1.100:3000
+     * 空字符串表示禁用 CORS（不添加任何 CORS 响应头）。
+     */
+    fun getCorsAllowedOrigins(): List<String> {
+        val raw = getString("cors.allowed_origins", "")
+        if (raw.isBlank()) return emptyList()
+        return raw.split(",").map { it.trim().lowercase() }.filter { it.isNotBlank() }
+    }
 }

@@ -91,6 +91,19 @@ landrop.file.expiration_hours=168
 landrop.challenge.ttl_seconds=60
 
 # ========================
+# CORS 跨域配置
+# ========================
+# 允许的前端 Origin 白名单（逗号分隔），仅作用于需要鉴权的 API。
+# 由于 API 均需鉴权（allowCredentials=true），Origin 必须是具体值，不能为 *。
+# /api/health 为公开端点，不受白名单约束。
+# 空值 = 禁用 CORS（所有跨域请求返回 403）。
+# 示例（单前端）：
+# cors.allowed_origins=http://localhost:3000
+# 示例（多前端 / 局域网）：
+# cors.allowed_origins=http://localhost:3000,http://192.168.1.100:3000
+# cors.allowed_origins
+
+# ========================
 # 房间规则
 # ========================
 # 单个房间最大成员数

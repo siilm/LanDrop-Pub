@@ -1,9 +1,7 @@
 package ink.siilm.gateway.auth
 
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.request.*
 
 /**
  * Ktor Authentication Provider — 从 Authorization: Bearer <token> 头验证 JWT。
@@ -23,6 +21,11 @@ fun AuthenticationConfig.jwtAuth(validator: JwtValidator) {
             } else {
                 null
             }
+        }
+        // CORS 预检（OPTIONS）请求跳过 JWT Bearer 认证，
+        // 由路由层的全局 options 处理器接管并返回 CORS 头。
+        skipWhen { call ->
+            call.request.local.method == HttpMethod.Options
         }
     }
 }
